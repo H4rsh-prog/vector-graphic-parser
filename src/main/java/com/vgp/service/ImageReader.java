@@ -7,7 +7,7 @@ import java.io.IOException;
 import javax.imageio.ImageIO;
 
 public class ImageReader {
-    public BufferedImage readImage(File path){
+    public static BufferedImage readImage(File path){
         BufferedImage result = null;
         try {
             result = ImageIO.read(path);
