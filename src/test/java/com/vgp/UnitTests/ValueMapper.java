@@ -25,8 +25,6 @@ public class ValueMapper {
         float[][] map = com.vgp.service.ValueMapper.createGrayscaleMap(image);
         float[][] comparator = null;
         try {
-            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File("src\\test\\java\\com\\vgp\\UnitTests\\resource\\test-image-path-grayscale-map")));
-            oos.writeObject(map);
             ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File("src\\test\\java\\com\\vgp\\UnitTests\\resource\\test-image-path-grayscale-map")));
             Object o = ois.readObject();
             comparator = (float[][]) o;
