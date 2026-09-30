@@ -8,6 +8,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 
@@ -22,6 +23,17 @@ public class ValueMapper {
         String filePath = Dotenv.configure().load().get("test-image-path");
         BufferedImage image = ImageReader.readImage(new File(filePath));
         float[][] map = com.vgp.service.ValueMapper.createGrayscaleMap(image);
-        ArrayUtils.printArray(map);
+        float[][] comparator = null;
+        try {
+            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(new File("src\\test\\java\\com\\vgp\\UnitTests\\resource\\test-image-path-grayscale-map")));
+            oos.writeObject(map);
+            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File("src\\test\\java\\com\\vgp\\UnitTests\\resource\\test-image-path-grayscale-map")));
+            Object o = ois.readObject();
+            comparator = (float[][]) o;
+        } catch(Exception e) {
+            e.printStackTrace();
+        } finally {
+            Arrays.equals(map, comparator);
+        }
     }
 }
