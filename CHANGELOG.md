@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## Unreleased
 
-- Added repo-level AI guidance and contributor workflow documentation.
-- Added CI automation for the Maven test lane.
-- Added standard issue and pull request templates.
+- Added raster image loading, grayscale mapping, binary masking, and array inspection utilities.
+- Configured image-processing tests to read their input path from a local `.env` file.
+- Added repository-level AI and contributor guidance.
+- Removed the CI workflow and issue and pull request templates.
