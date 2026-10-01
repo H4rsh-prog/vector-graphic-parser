@@ -1,19 +1,16 @@
 package com.vgp.UnitTests;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.Arrays;
 
 import org.junit.jupiter.api.Test;
 
 import com.vgp.service.ImageReader;
-import com.vgp.utils.ArrayUtils;
 
 import io.github.cdimascio.dotenv.Dotenv;
 
@@ -31,7 +28,7 @@ public class ValueMapper {
         } catch(Exception e) {
             e.printStackTrace();
         } finally {
-            Arrays.equals(map, comparator);
+            assertTrue(Arrays.equals(map, comparator));
         }
     }
 }
