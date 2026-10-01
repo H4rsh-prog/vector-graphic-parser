@@ -14,7 +14,6 @@ public class ImageReader {
         } catch(IOException ex) {
             ex.printStackTrace();
         }
-        result.getRgb
         return result;
     }
 }
