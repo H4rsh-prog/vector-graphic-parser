@@ -26,7 +26,7 @@ public class ArrayUtils {
     public static <T> T[] normalize2DArray(T[][] array) {
         int h = array.length;
         int w = array[0].length;
-        Class<?> clazz = array.getClass().getComponentType();
+        Class<?> clazz = array.getClass().getComponentType().getComponentType();
         T[] normalizedArray = (T[]) Array.newInstance(clazz, w*h);
         int indx = 0;
         for(T[] row : array) {
