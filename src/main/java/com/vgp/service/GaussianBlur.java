@@ -42,7 +42,7 @@ public class GaussianBlur {
         }
         //VERTICAL PASS
         for(int x=0;x<w;x++) {
-            for(int y=0;y<h;x++) {
+            for(int y=0;y<h;y++) {
                 double sum = 0.0;
                 for(int k=-r;k<r;k++) {
                     int iy = y+k;
