@@ -2,6 +2,7 @@ package com.vgp.service;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 
 public class ContourTracing {
     public static List<List<java.awt.geom.Point2D.Double>> trace(boolean[][] mask){
@@ -38,7 +39,33 @@ public class ContourTracing {
     }
     private static List<List<java.awt.geom.Point2D.Double>> closeLoops(HashMap<Long, Long> segments) {
         List<List<java.awt.geom.Point2D.Double>> contours = new ArrayList<>();
-         return contours;
+        while(!segments.isEmpty()) {
+            Long start = segments.keySet().iterator().next();
+            Long cur = start;
+            List<java.awt.geom.Point2D.Double> contour_current = new ArrayList<>();
+            boolean broken = false;
+
+            while(true) {
+                Long next = segments.remove(cur);
+                if(next==null) {
+                    broken = true;
+                    break;
+                }
+                int cx = unpackXCordinate(cur);
+                int cy = unpackYCordinate(cur);
+                //Dividing by two to reset the context grid
+                contour_current.add(new java.awt.geom.Point2D.Double(cx / 2.0, cy / 2.0));
+                cur = next;
+                if (cur.equals(start)) {
+                    break;
+                }
+            }
+
+            if(!broken && contour_current.size() >= 3) {
+                contours.add(contour_current);
+            }
+        }
+        return contours;
     }
 
     //HELPER FUNCTION TO PACK [X,Y] CORDINATES INTO A SINGLE 64 BIT LONG
