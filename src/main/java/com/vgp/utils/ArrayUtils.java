@@ -40,7 +40,8 @@ public class ArrayUtils {
         return normalizedArray;
     }
     public static String serializePolylineToSVG(List<List<java.awt.geom.Point2D.Double>> polyline, int width, int height) {
-    	StringBuilder SVGTag = new StringBuilder(String.format(Locale.ROOT,"<svg xmlns=\"https://www.w3.org/2000/svg\" width=\"%d\" height=\"%d\" viewBox=\"0 0 %d %d\">%n"
+    	StringBuilder SVGTag = new StringBuilder(String.format(Locale.ROOT,"<?xml version=\"1.0\" encoding=\"UTF-8\"?>%n"
+    												+ "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%d\" height=\"%d\" viewBox=\"0 0 %d %d\">%n"
     												+ "<rect width=\"%d\" height=\"%d\" fill=\"white\" />%n", width, height, width, height, width, height));
     	for(List<Point2D.Double> loop : polyline) {
     		if(loop.isEmpty()) continue;
@@ -50,7 +51,7 @@ public class ArrayUtils {
     		int loopSize = loop.size();
     		for(int i=1;i<loopSize;i++) {
     			Point2D.Double p = loop.get(i);
-    			d.append(String.format(Locale.ROOT, "L %.2f %.2f", p.x, p.y));
+    			d.append(String.format(Locale.ROOT, " L %.2f %.2f", p.x, p.y));
     		}
     		d.append("Z");
     		SVGTag.append(String.format(Locale.ROOT, " <path d=\"%s\" fill=\"none\" stroke=\"black\" stroke-width=\"0.5\"/> %n", d));
