@@ -18,7 +18,7 @@ public class ContourTracing {
             }
         }
 
-        HashMap<Long, Long> segments = new HashMap<>();
+        HashMap<Long, List<Long>> adjacency = new HashMap<>();
         for(int y=0;y<=h;y++) {
             for(int x=0;x<=w;x++) {
                 boolean TL = mask[y][x];
@@ -26,7 +26,7 @@ public class ContourTracing {
                 boolean BR = mask[y+1][x+1];
                 boolean BL = mask[y+1][x];
 
-                if(!TL && !TR && !BL && !BR) continue;
+                int cellCase = (TL?8:0) | (TR?4:0) | (BR?2:0) | (BL?1:0) ;
 
                 // Doubling the grid context so midpoints can be represented as whole integers
                 // Then packing them into a single 64 bit coordinate
@@ -35,62 +35,90 @@ public class ContourTracing {
                 long B = packCordinates(2*x+1, 2*y+2);
                 long L = packCordinates(2*x, 2*y+1);
 
-                //BL => L -> B
-                verifyAddSegment(segments, L, B, BL);
-                //BR => B -> R
-                verifyAddSegment(segments, B, R, BR);
-                //TR => R -> T
-                verifyAddSegment(segments, R, T, TR);
-                //TL => T -> L
-                verifyAddSegment(segments, T, L, TL);
+                switch (cellCase) {
+                    case 1 -> addSegment(adjacency, L, B);   // BL
+                    case 2 -> addSegment(adjacency, B, R);  // BR
+                    case 3 -> addSegment(adjacency, L, R);    // BL, BR
+                    case 4 -> addSegment(adjacency, R, T);     // TR
+                    case 5 -> {
+                        // TL and BR foreground: connect around the two
+                        // background corners, keeping foreground 8-connected.
+                        addSegment(adjacency, T, R);
+                        addSegment(adjacency, B, L);
+                    }
+                    case 6 -> addSegment(adjacency, T, B);    // TR, BR
+                    case 7 -> addSegment(adjacency, T, L);      // All but BL
+                    case 8 -> addSegment(adjacency, T, L);      // TL
+                    case 9 -> addSegment(adjacency, T, B);    // TL, BL
+                    case 10 -> {
+                        // TR and BL foreground: connect around the two
+                        // background corners, keeping foreground 8-connected.
+                        addSegment(adjacency, T, L);
+                        addSegment(adjacency, R, B);
+                    }
+                    case 11 -> addSegment(adjacency, R, T);    // All but TR
+                    case 12 -> addSegment(adjacency, L, R);   // TL, TR
+                    case 13 -> addSegment(adjacency, B, R); // All but BR
+                    case 14 -> addSegment(adjacency, B, L);  // All but TL
+                    default -> {
+                        // Cases 0 and 15 have no foreground/background edge.
+                    }
+                }
             }
         }
 
-        return closeLoops(segments);
+        return closeLoops(adjacency);
     }
-    private static void verifyAddSegment(HashMap<Long, Long> segments, long from, long to, boolean active) {
-        if(!active) return;
-
-        Long existing = segments.get(from);
-        if(existing == null) {
-            segments.put(from, to);
-            return;
-        }
-        // if(!existing.equals(to)) {
-        //     throw new IllegalStateException(
-        //         "Conflicting contour segment at " + from + ": " + existing + " vs " + to
-        //     );
-        // }
+    private static void addSegment(HashMap<Long, List<Long>> adjacency, long from, long to) {
+        adjacency.computeIfAbsent(from, absent -> new ArrayList<>(2)).add(to);
+        adjacency.computeIfAbsent(to, absent -> new ArrayList<>(2)).add(from);
     }
-    private static List<List<java.awt.geom.Point2D.Double>> closeLoops(HashMap<Long, Long> segments) {
+    private static List<List<java.awt.geom.Point2D.Double>> closeLoops(HashMap<Long, List<Long>> adjacency) {
         List<List<java.awt.geom.Point2D.Double>> contours = new ArrayList<>();
-        while(!segments.isEmpty()) {
-            Long start = segments.keySet().iterator().next();
+        while(!adjacency.isEmpty()) {
+            Long start = adjacency.keySet().iterator().next();
             Long cur = start;
             List<java.awt.geom.Point2D.Double> contour_current = new ArrayList<>();
-            boolean broken = false;
+            boolean closed = false;
 
             while(true) {
-                Long next = segments.remove(cur);
-                if(next==null) {
-                    broken = true;
-                    break;
-                }
                 int cx = unpackXCordinate(cur);
                 int cy = unpackYCordinate(cur);
-                //Dividing by two to reset the context grid and subtracting padding
                 contour_current.add(new java.awt.geom.Point2D.Double((cx / 2.0) - 1.0, (cy / 2.0) - 1.0));
+                
+                List<Long> neighbors = adjacency.get(cur);
+                if(neighbors==null || neighbors.isEmpty()) {
+                    break;
+                }
+
+                long next = neighbors.get(0);
+                removeSegment(adjacency, cur, next);
                 cur = next;
+
                 if (cur.equals(start)) {
+                    closed = true;
                     break;
                 }
             }
 
-            if(!broken && contour_current.size() >= 3) {
+            if(closed && contour_current.size() >= 3) {
                 contours.add(contour_current);
             }
         }
         return contours;
+    }
+    private static void removeSegment(HashMap<Long, List<Long>> adjacency, long from, long to) {
+        removeNeighbor(adjacency, from, to);
+        removeNeighbor(adjacency, to, from);
+    }
+    private static void removeNeighbor(HashMap<Long, List<Long>> adjacency, long from, long to) {
+        List<Long> neighbors = adjacency.get(from);
+        if(neighbors == null) return;
+
+        neighbors.remove(Long.valueOf(to));
+        if(neighbors.isEmpty()) {
+            adjacency.remove(from);
+        }
     }
 
     //HELPER FUNCTION TO PACK [X,Y] CORDINATES INTO A SINGLE 64 BIT LONG
