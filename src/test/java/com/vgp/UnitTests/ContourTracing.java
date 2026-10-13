@@ -1,12 +1,12 @@
 package com.vgp.UnitTests;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileWriter;
+import java.io.FileReader;
 import java.io.ObjectInputStream;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 
@@ -21,19 +21,14 @@ public class ContourTracing {
             Object o = ois.readObject();
             boolean[][] mask = (boolean[][]) o;
             List<List<java.awt.geom.Point2D.Double>> contour = com.vgp.service.ContourTracing.trace(mask);
-			System.out.println(Arrays.deepToString(mask));
-			System.out.println(contour);
-			for(List<java.awt.geom.Point2D.Double> loop : contour) {
-				System.out.println(String.format(Locale.ROOT, "LOOP %s ---------------", loop.toString()));
-				for(java.awt.geom.Point2D.Double point : loop) {
-					System.out.println(String.format(Locale.ROOT, "{ %.2f, %.2f}", point.x, point.y));
-				}
-				System.out.println(String.format(Locale.ROOT, "LOOP %s ---------------", loop.toString()));
-			}
             String SVG = ArrayUtils.serializePolylineToSVG(contour, 300, 300);
-            FileWriter fw = new FileWriter(new File("target/contourTracingTestOutput.svg"));
-            fw.write(SVG);
-            fw.close();
+            FileReader fr = new FileReader(new File("src\\test\\java\\com\\vgp\\UnitTests\\resource\\test-image-path-unblurred-contour"));
+            String test_file = "";
+			while(fr.ready()) {
+				test_file += (char) fr.read();
+			}
+			System.out.println(SVG.equals(test_file));
+            assertEquals(test_file, SVG);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
