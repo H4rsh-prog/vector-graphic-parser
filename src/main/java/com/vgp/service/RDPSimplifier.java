@@ -1,9 +1,30 @@
 package com.vgp.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class RDPSimplifier {
+    public static List<List<java.awt.geom.Point2D.Double>> simplify(List<List<java.awt.geom.Point2D.Double>> points){
+        List<List<java.awt.geom.Point2D.Double>> result = new ArrayList<>();
+        int outer_size = points.size();
 
+        for(int i=0;i<outer_size;i++) {
+            List<java.awt.geom.Point2D.Double> simplified = new ArrayList<>();
+            List<java.awt.geom.Point2D.Double> segment = points.get(i);
+            int size = segment.size();
+            boolean[] keep = new boolean[size];
+            keep[0] = true;
+            keep[size-1] = true;
+
+            recurseRDP(segment, 0, size-1, keep, size);
+
+            for(int j=1;j<size-2;j++) {
+                if(!keep[j]) continue;
+                simplified.add(segment.get(i));
+            }
+            result.set(i, simplified);
+        }
+    }
     public static void recurseRDP(List<java.awt.geom.Point2D.Double> points, int first, int last, boolean[] keep, float epsilon){
         if(first+1 >= last) return; // No points in between to simplify
 
