@@ -24,17 +24,18 @@ public class RDPSimplifier {
             }
             result.set(i, simplified);
         }
+        return result;
     }
     public static void recurseRDP(List<java.awt.geom.Point2D.Double> points, int first, int last, boolean[] keep, float epsilon){
         if(first+1 >= last) return; // No points in between to simplify
 
-        float maxDistance = 0;
+        double maxDistance = 0;
         int maxIndex = -1;
 
         for(int i=first+1;i<last-1;i++) {
             // Calculating perpendicular distance of the point from a straight line between sub segment of points
             // TO IMPLEMENT
-            int distance = calculatePerpendicularDistance(points.get(i), points(first), points(last));
+            double distance = calculatePerpendicularDistance(points.get(i), points.get(first), points.get(last));
             if(distance > maxDistance) {
                 maxDistance = distance;
                 maxIndex = i;
@@ -51,5 +52,16 @@ public class RDPSimplifier {
                 keep[i] = false;
             }
         }
+    }
+    public static double calculatePerpendicularDistance(java.awt.geom.Point2D.Double P, java.awt.geom.Point2D.Double A, java.awt.geom.Point2D.Double B){
+        double Dx = B.x - A.x;
+        double Dy = B.y - A.y;
+
+        double len2 = (Dx*Dx) + (Dy*Dy);
+        double cross = ((P.x - A.x)* Dy) - ((P.y - A.y)* Dx);
+        
+        double distance = Math.abs(cross) / Math.sqrt(len2);
+
+        return distance;
     }
 }
