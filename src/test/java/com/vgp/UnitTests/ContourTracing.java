@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.ObjectInputStream;
 import java.util.List;
 
@@ -22,6 +23,8 @@ public class ContourTracing {
             boolean[][] mask = (boolean[][]) o;
             List<List<java.awt.geom.Point2D.Double>> contour = com.vgp.service.ContourTracing.trace(mask);
             String SVG = ArrayUtils.serializePolylineToSVG(contour, 300, 300);
+			FileWriter fw = new FileWriter(new File("target/RDPSimplificationTestOutput.svg"));
+            fw.write(SVG);
             FileReader fr = new FileReader(new File("src\\test\\java\\com\\vgp\\UnitTests\\resource\\test-image-path-unblurred-contour"));
             String test_file = "";
 			while(fr.ready()) {
