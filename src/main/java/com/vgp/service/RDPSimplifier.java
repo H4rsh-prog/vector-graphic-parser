@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RDPSimplifier {
-    public static List<List<java.awt.geom.Point2D.Double>> simplify(List<List<java.awt.geom.Point2D.Double>> points){
+    public static List<List<java.awt.geom.Point2D.Double>> simplify(List<List<java.awt.geom.Point2D.Double>> points, float epsilon){
         List<List<java.awt.geom.Point2D.Double>> result = new ArrayList<>();
         int outer_size = points.size();
 
@@ -16,13 +16,13 @@ public class RDPSimplifier {
             keep[0] = true;
             keep[size-1] = true;
 
-            recurseRDP(segment, 0, size-1, keep, size);
+            recurseRDP(segment, 0, size-1, keep, epsilon);
 
             for(int j=1;j<size-2;j++) {
                 if(!keep[j]) continue;
-                simplified.add(segment.get(i));
+                simplified.add(segment.get(j));
             }
-            result.set(i, simplified);
+            result.add(simplified);
         }
         return result;
     }
