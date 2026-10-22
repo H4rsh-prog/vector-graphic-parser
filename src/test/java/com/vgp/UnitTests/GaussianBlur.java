@@ -13,8 +13,7 @@ import com.vgp.utils.ArrayUtils;
 public class GaussianBlur {
     @Test
     public void blur(){
-        try {
-            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File("src\\test\\java\\com\\vgp\\UnitTests\\resource\\test-image-path-grayscale-map")));
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File("src\\test\\java\\com\\vgp\\UnitTests\\resource\\test-image-path-grayscale-map")))){
             Object o = ois.readObject();
             float[][] image = (float[][]) o;
             java.awt.image.BufferedImage preview = new java.awt.image.BufferedImage(image[0].length, image.length, java.awt.image.BufferedImage.TYPE_BYTE_GRAY);
