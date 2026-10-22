@@ -11,8 +11,7 @@ import org.junit.jupiter.api.Test;
 public class BinaryMasker {
     @Test 
     public void mask(){
-        try {
-            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File("src\\test\\java\\com\\vgp\\UnitTests\\resource\\test-image-path-grayscale-map")));
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File("src\\test\\java\\com\\vgp\\UnitTests\\resource\\test-image-path-grayscale-map")))) {
             Object o = ois.readObject();
             float[][] image = (float[][]) o;
             boolean[][] mask = com.vgp.service.BinaryMasker.mask(image, (float) 0.3);

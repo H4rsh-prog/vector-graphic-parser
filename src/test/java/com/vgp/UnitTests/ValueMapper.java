@@ -21,8 +21,7 @@ public class ValueMapper {
         BufferedImage image = ImageReader.readImage(new File(filePath));
         float[][] map = com.vgp.service.ValueMapper.createGrayscaleMap(image);
         float[][] comparator = null;
-        try {
-            ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File("src\\test\\java\\com\\vgp\\UnitTests\\resource\\test-image-path-grayscale-map")));
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File("src\\test\\java\\com\\vgp\\UnitTests\\resource\\test-image-path-grayscale-map")))) {
             Object o = ois.readObject();
             comparator = (float[][]) o;
         } catch(Exception e) {

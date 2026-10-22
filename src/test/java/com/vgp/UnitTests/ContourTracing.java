@@ -17,15 +17,14 @@ import com.vgp.utils.ArrayUtils;
 public class ContourTracing {
 	@Test
 	public void trace() {
-		try {
-			ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File("src\\test\\java\\com\\vgp\\UnitTests\\resource\\test-image-path-binary-mask")));
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(new File("src\\test\\java\\com\\vgp\\UnitTests\\resource\\test-image-path-binary-mask")));
+			 FileWriter fw = new FileWriter(new File("target/RDPSimplificationTestOutput.svg"));
+			 FileReader fr = new FileReader(new File("src\\test\\java\\com\\vgp\\UnitTests\\resource\\test-image-path-unblurred-contour"))) {
             Object o = ois.readObject();
             boolean[][] mask = (boolean[][]) o;
             List<List<java.awt.geom.Point2D.Double>> contour = com.vgp.service.ContourTracing.trace(mask);
             String SVG = ArrayUtils.serializePolylineToSVG(contour, 300, 300);
-			FileWriter fw = new FileWriter(new File("target/RDPSimplificationTestOutput.svg"));
             fw.write(SVG);
-            FileReader fr = new FileReader(new File("src\\test\\java\\com\\vgp\\UnitTests\\resource\\test-image-path-unblurred-contour"));
             String test_file = "";
 			while(fr.ready()) {
 				test_file += (char) fr.read();
