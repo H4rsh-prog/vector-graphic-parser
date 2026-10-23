@@ -26,18 +26,38 @@ public class ArrayUtils {
     public static <T> String getArray(T[] array) {
         return Arrays.deepToString(array);
     }
-    public static <T> T[] normalize2DArray(T[][] array) {
-        int h = array.length;
-        int w = array[0].length;
-        Class<?> clazz = array.getClass().getComponentType().getComponentType();
-        T[] normalizedArray = (T[]) Array.newInstance(clazz, w*h);
-        int indx = 0;
-        for(T[] row : array) {
-            for(T n : row) {
-                normalizedArray[indx++] = n;
+    // public static <T> T[] normalize2DArray(T[][] array) {        // NOT REALLY NEEDED TO BE GENERIC
+    //     int h = array.length;
+    //     int w = array[0].length;
+    //     Class<?> clazz = array.getClass().getComponentType().getComponentType();
+    //     T[] normalizedArray = (T[]) Array.newInstance(clazz, w*h);
+    //     int indx = 0;
+    //     for(T[] row : array) {
+    //         for(T n : row) {
+    //             normalizedArray[indx++] = n;
+    //         }
+    //     }
+    //     return normalizedArray;
+    // }
+    public static float[] normalize(float[][] mat) {
+        float[] normalizedArray = new float[mat.length*mat[0].length];
+        int index = -1;
+        for(float[] row : mat) {
+            for(float n : row) {
+                normalizedArray[++index] = n;
             }
         }
         return normalizedArray;
+    }
+    public static float[][] denormalize(float[] arr, int w, int h) {
+        float[][] matrix = new float[h][w];
+        int index = -1;
+        for(int i=0; i<h; i++) {
+            for(int j=0; j<w; j++) {
+                matrix[i][j] = arr[++index];
+            }
+        }
+        return matrix;
     }
     public static String serializePolylineToSVG(List<List<java.awt.geom.Point2D.Double>> polyline, int width, int height) {
     	StringBuilder SVGTag = new StringBuilder(String.format(Locale.ROOT,"<?xml version=\"1.0\" encoding=\"UTF-8\"?>%n"
