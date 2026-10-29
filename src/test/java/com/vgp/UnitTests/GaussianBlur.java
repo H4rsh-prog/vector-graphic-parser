@@ -8,7 +8,6 @@ import javax.imageio.ImageIO;
 
 import org.junit.jupiter.api.Test;
 
-import com.vgp.utils.ArrayUtils;
 
 public class GaussianBlur {
     @Test
@@ -33,7 +32,12 @@ public class GaussianBlur {
                     boxedImage[y][x] = image[y][x];
                 }
             }
-            Float[] flattenedImage = ArrayUtils.normalize2DArray(boxedImage);
+            Float[] flattenedImage = new Float[h * w];
+            for (int y = 0; y < h; y++) {
+                for (int x = 0; x < w; x++) {
+                    flattenedImage[y * w + x] = boxedImage[y][x];
+                }
+            }
             int pixelCount = flattenedImage.length;
             float[] pixels = new float[pixelCount];
             for(int i=0;i<pixelCount;i++) {
