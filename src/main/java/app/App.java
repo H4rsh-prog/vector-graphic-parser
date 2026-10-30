@@ -1,4 +1,4 @@
-package com.vgp.app;
+package app;
 
 public class App {
     public static void start(String PATH_RASTER, String PATH_VECTOR, float BLUR_SIGMA, float MASK_THRESHOLD, float SIMPLIFICATION_EPSILON){
