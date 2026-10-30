@@ -128,7 +128,7 @@ public class CurveFitter {
      * c11 = sigma(B2(u_i)^2)
      * c01 (and) c10 = sigma(B1(u_i)*B2(u_i)*(T0(dot)T1))
      * 
-     * Then we calculate the [det]
+     * Then we calculate the determinant
      * det = (c00*c11)-(c01*c01)
      * 
      * Then finally we can calculate the alpha (a) values
@@ -152,7 +152,35 @@ public class CurveFitter {
             double[] u,
             Point2D.Double T0,
             Point2D.Double T1) {
-        throw new UnsupportedOperationException();
+                int uLength = u.length;
+                double[][] B = new double[uLength][4];
+
+                for(int i=0; i<uLength; i++) {
+                    B[i] = calculateBernsteinWeights(u[i]);
+                }
+                List<Point2D.Double> D_i = calculateRawError(points, B);
+                double[] D_iT0 = new double[uLength];
+                double[] D_iT1 = new double[uLength];
+
+                for(int i=0; i<uLength; i++) {
+                    Point2D.Double D = D_i.get(i);
+                    D_iT0[i] = dot(D,T0);
+                    D_iT1[i] = dot(D,T1);
+                }
+
+                double x_0 = 0, x_1 = 0;
+                for(int i=0; i<uLength; i++) {
+                    x_0 += (B[i][1]*D_iT0[i]);
+                    x_1 += (B[i][2]*D_iT1[i]);
+                }
+
+                double[][] N = createNormalMatrix(B, T0, T1);
+                double det =  (N[0][0]*N[1][1]) - (N[0][1]*N[1][0]);
+
+                double a_0 = ((N[1][1]*x_0)-(N[0][1]*x_1))/det;
+                double a_1 = ((N[0][0]*x_1)-(N[1][0]*x_0))/det;
+                
+                return new double[] {a_0, a_1};
     }
 
     // B0 = (1-u_i)^3
