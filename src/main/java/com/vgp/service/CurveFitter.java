@@ -1,6 +1,7 @@
 package com.vgp.service;
 
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
@@ -140,29 +141,53 @@ public class CurveFitter {
      *
      * @param points       ordered input samples
      * @param parameters   one parameter in [0, 1] per sample
-     * @param leftTangent  normalized tangent pointing from the first sample
+     * @param T0           normalized tangent pointing from the first sample
      *                     toward the next sample
-     * @param rightTangent normalized tangent pointing from the last sample
+     * @param T1           normalized tangent pointing from the last sample
      *                     toward the previous sample
      * @return handle lengths in the order [alpha_L, alpha_R]
      */
     public static double[] leastSquaresHandleLengths(
             List<Point2D.Double> points,
-            double[] parameters,
-            Point2D.Double leftTangent,
-            Point2D.Double rightTangent) {
+            double[] u,
+            Point2D.Double T0,
+            Point2D.Double T1) {
         throw new UnsupportedOperationException();
     }
 
+    // B0 = (1-u_i)^3
+    // B1 = 3u_i(1-u_i)^2
+    // B2 = 3u_i^2(1-u_i)
+    // B3 = u_i^3
     private static double[] calculateBernsteinWeights(double u) {
         double[] weight = new double[4];
         double oneMinusU = 1.0 - u;
-        double threeU = 3*u;
+        double threeU = 3 * u;
         weight[0] = Math.pow(oneMinusU, 3);
-        weight[1] = threeU*(oneMinusU*oneMinusU);
-        weight[2] = threeU*u*oneMinusU;
+        weight[1] = threeU * (oneMinusU * oneMinusU);
+        weight[2] = threeU * u * oneMinusU;
         weight[3] = Math.pow(u, 3);
         return weight;
     }
 
+    // D_i = P_i-(p0*(B0(u_i)+B1(u_i))+(p3*(B2(u_i)+B3(u_i))))
+    private static List<Point2D.Double> calculateRawError(List<Point2D.Double> points, double[] u, double[][] B) {
+        List<Point2D.Double> error = new ArrayList<>();
+        int uLength = u.length;
+        Point2D.Double P0 = points.get(0);
+        Point2D.Double P3 = points.get(points.size()-1);
+
+        for(int i=0; i<uLength; i++) {
+            Point2D.Double P_i = points.get(i);
+            double B01 = B[i][0] + B[i][1];
+            double B23 = B[i][2] + B[i][3];
+
+            Point2D.Double weightedP0 = new Point2D.Double(P0.x*B01, P0.y*B01);
+            Point2D.Double weightedP3 = new Point2D.Double(P3.x*B23, P3.y*B23);
+            Point2D.Double weightedEnds = new Point2D.Double(weightedP0.x+weightedP3.x, weightedP0.y+weightedP3.y);
+
+            error.add(new Point2D.Double(P_i.x-weightedEnds.x, P_i.y-weightedEnds.y));
+        }
+        return error;
+    }
 }
