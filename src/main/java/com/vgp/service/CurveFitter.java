@@ -196,7 +196,7 @@ public class CurveFitter {
     // c01 (and) c10 = sigma(B1(u_i)*B2(u_i)*(T0(dot)T1))
     private static double[][] createNormalMatrix(double[][] B, Point2D.Double T0, Point2D.Double T1) {
         double c00 = 0, c11 = 0, c01 = 0;
-        double T0T1 = (T0.x * T1.x) + (T0.y * T1.y);
+        double T0T1 = dot(T0, T1);
 
         for (double[] b : B) {
             c00 += (b[1] * b[1]);
@@ -205,5 +205,9 @@ public class CurveFitter {
         }
         return new double[][] { { c00, c01 },
                 { c01, c11 } };
+    }
+
+    private static double dot(Point2D.Double a, Point2D.Double b) {
+        return (a.x * b.x) + (a.y * b.y);
     }
 }
