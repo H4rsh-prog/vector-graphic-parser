@@ -154,4 +154,15 @@ public class CurveFitter {
         throw new UnsupportedOperationException();
     }
 
+    private static double[] calculateBernsteinWeights(double u) {
+        double[] weight = new double[4];
+        double oneMinusU = 1.0 - u;
+        double threeU = 3*u;
+        weight[0] = Math.pow(oneMinusU, 3);
+        weight[1] = threeU*(oneMinusU*oneMinusU);
+        weight[2] = threeU*u*oneMinusU;
+        weight[3] = Math.pow(u, 3);
+        return weight;
+    }
+
 }
