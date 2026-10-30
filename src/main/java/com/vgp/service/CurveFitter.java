@@ -152,35 +152,64 @@ public class CurveFitter {
             double[] u,
             Point2D.Double T0,
             Point2D.Double T1) {
-                int uLength = u.length;
-                double[][] B = new double[uLength][4];
+        int uLength = u.length;
+        double[][] B = new double[uLength][4];
 
-                for(int i=0; i<uLength; i++) {
-                    B[i] = calculateBernsteinWeights(u[i]);
-                }
-                List<Point2D.Double> D_i = calculateRawError(points, B);
-                double[] D_iT0 = new double[uLength];
-                double[] D_iT1 = new double[uLength];
+        for (int i = 0; i < uLength; i++) {
+            B[i] = calculateBernsteinWeights(u[i]);
+        }
+        List<Point2D.Double> D_i = calculateRawError(points, B);
+        double[] D_iT0 = new double[uLength];
+        double[] D_iT1 = new double[uLength];
 
-                for(int i=0; i<uLength; i++) {
-                    Point2D.Double D = D_i.get(i);
-                    D_iT0[i] = dot(D,T0);
-                    D_iT1[i] = dot(D,T1);
-                }
+        for (int i = 0; i < uLength; i++) {
+            Point2D.Double D = D_i.get(i);
+            D_iT0[i] = dot(D, T0);
+            D_iT1[i] = dot(D, T1);
+        }
 
-                double x_0 = 0, x_1 = 0;
-                for(int i=0; i<uLength; i++) {
-                    x_0 += (B[i][1]*D_iT0[i]);
-                    x_1 += (B[i][2]*D_iT1[i]);
-                }
+        double x_0 = 0, x_1 = 0;
+        for (int i = 0; i < uLength; i++) {
+            x_0 += (B[i][1] * D_iT0[i]);
+            x_1 += (B[i][2] * D_iT1[i]);
+        }
 
-                double[][] N = createNormalMatrix(B, T0, T1);
-                double det =  (N[0][0]*N[1][1]) - (N[0][1]*N[1][0]);
+        double[][] N = createNormalMatrix(B, T0, T1);
+        double det = (N[0][0] * N[1][1]) - (N[0][1] * N[1][0]);
+        if (!isValidDeterminant(N, det))
+            return fallbackForHandleLength(points, uLength);
 
-                double a_0 = ((N[1][1]*x_0)-(N[0][1]*x_1))/det;
-                double a_1 = ((N[0][0]*x_1)-(N[1][0]*x_0))/det;
-                
-                return new double[] {a_0, a_1};
+        double a_0 = ((N[1][1] * x_0) - (N[0][1] * x_1)) / det;
+        if (a_0 <= 0)
+            return fallbackForHandleLength(points, uLength);
+        double a_1 = ((N[0][0] * x_1) - (N[1][0] * x_0)) / det;
+        if (a_1 <= 0)
+            return fallbackForHandleLength(points, uLength);
+
+        return new double[] { a_0, a_1 };
+    }
+
+    // If the system is singular or either handle length is non-positive,
+    // use a_0=a_1=sqrt((p(n-1).x-p0.x)^2+(p(n-1).y-p0.y)^2)/3.
+    private static double[] fallbackForHandleLength(List<Point2D.Double> points, int n) {
+        Point2D.Double P0 = points.get(0);
+        Point2D.Double PnMinus1 = points.get(n - 1);
+        double D_x = PnMinus1.x - P0.x;
+        double D_y = PnMinus1.y - P0.y;
+
+        double a = Math.sqrt((D_x * D_x) + (D_y * D_y)) / 3;
+
+        return new double[] { a, a };
+    }
+
+    private static boolean isValidDeterminant(double[][] N, double det) {
+        double scale = Math.max(
+                Math.abs(N[0][0] * N[1][1]),
+                N[0][1] * N[0][1]);
+
+        if (det <= 1e-12 * scale)
+            return false;
+        return true;
     }
 
     // B0 = (1-u_i)^3
