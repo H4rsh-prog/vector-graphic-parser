@@ -68,14 +68,14 @@ public class CurveFitter {
      */
     public static Point2D.Double leftTangent(List<Point2D.Double> points, int i) {
         Point2D.Double P0 = points.get(i);
-        Point2D.Double P1 = points.get(i+1);
+        Point2D.Double P1 = points.get(i + 1);
 
         double d_x = P1.x - P0.x;
         double d_y = P1.y - P0.y;
 
-        double q = Math.sqrt((d_x*d_x) + (d_y*d_y));
+        double q = Math.sqrt((d_x * d_x) + (d_y * d_y));
 
-        return new Point2D.Double(d_x/q, d_y/q);
+        return new Point2D.Double(d_x / q, d_y / q);
     }
 
     /**
@@ -91,14 +91,67 @@ public class CurveFitter {
      */
     public static Point2D.Double rightTangent(List<Point2D.Double> points, int i) {
         Point2D.Double P3 = points.get(i);
-        Point2D.Double P2 = points.get(i-1);
+        Point2D.Double P2 = points.get(i - 1);
 
         double d_x = P2.x - P3.x;
         double d_y = P2.y - P3.y;
 
-        double q = Math.sqrt((d_x*d_x) + (d_y*d_y));
+        double q = Math.sqrt((d_x * d_x) + (d_y * d_y));
 
-        return new Point2D.Double(d_x/q, d_y/q);
+        return new Point2D.Double(d_x / q, d_y / q);
+    }
+
+    /**
+     * Solves for the left and right Bezier handle lengths using the supplied
+     * chord-length parameters and endpoint tangents.
+     *
+     * For each parameter u_i calculate Bernstein Weights:
+     * B0 = (1-u_i)^3
+     * B1 = 3u_i(1-u_i)^2
+     * B2 = 3u_i^2(1-u_i)
+     * B3 = u_i^3
+     * 
+     * Then calculate the Error
+     * D_i = P_i-(p0*(B0(u_i)+B1(u_i))+(p3*(B2(u_i)+B3(u_i)))) //(raw errors)
+     * D_iT0 = D_i(dot)T0 //(error projected on left tangent)
+     * D_iT1 = D_i(dot)T1 //(error projected on right tangent)
+     * 
+     * Then we multiply both weights (Bernstein and Error Tangent)
+     * x_0 = sigma(B1(u_i)*D_iT0)
+     * x_1 = sigma(B2(u_i)*D_iT1)
+     * 
+     * Then we create the Normal Matrix
+     * N [ c00 , c01
+     * c10 , c11 ]
+     * c00 = sigma(B1(u_i)^2)
+     * c11 = sigma(B2(u_i)^2)
+     * c01 (and) c10 = sigma(B1(u_i)*B2(u_i)*(T0(dot)T1))
+     * 
+     * Then we calculate the [det]
+     * det = (c00*c11)-(c01*c01)
+     * 
+     * Then finally we can calculate the alpha (a) values
+     * a_0 = ((c11*x_0)-(c01*x_1))/det
+     * a_1 = ((c00*x_1)-(c01*x_0))/det
+     * 
+     * 
+     * If the system is singular or either handle length is non-positive,
+     * use a_0=a_1=|p(n-1)-p0|/3.
+     *
+     * @param points       ordered input samples
+     * @param parameters   one parameter in [0, 1] per sample
+     * @param leftTangent  normalized tangent pointing from the first sample
+     *                     toward the next sample
+     * @param rightTangent normalized tangent pointing from the last sample
+     *                     toward the previous sample
+     * @return handle lengths in the order [alpha_L, alpha_R]
+     */
+    public static double[] leastSquaresHandleLengths(
+            List<Point2D.Double> points,
+            double[] parameters,
+            Point2D.Double leftTangent,
+            Point2D.Double rightTangent) {
+        throw new UnsupportedOperationException();
     }
 
 }
