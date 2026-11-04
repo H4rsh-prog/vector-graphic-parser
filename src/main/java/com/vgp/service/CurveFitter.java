@@ -14,10 +14,20 @@ public class CurveFitter {
      * @param points point sequences to fit
      * @return the fitted cubic Bezier curves
      */
-    public static List<Cubic> fit(List<List<Point2D.Double>> points) {
-        for (List<Point2D.Double> contour : points) {
-            double[] u_i = chordLengthParameterize(contour);
-        }
+    public static List<Cubic> fit(List<List<Point2D.Double>> points, double tolerance) {
+        
+        throw new UnsupportedOperationException();
+    }
+    public static List<Cubic> makeCubic(List<Point2D.Double> contour, double tolerance) {
+        int size = contour.size();
+        Point2D.Double P0 = contour.get(0);
+        Point2D.Double P3 = contour.get(size-1);
+
+        double[] u_i = chordLengthParameterize(contour);
+        Point2D.Double T0 = leftTangent(contour, 0);
+        Point2D.Double T1 = rightTangent(contour, size-1);
+        double[] a = leastSquaresHandleLengths(contour, u_i, T0, T1);
+
         throw new UnsupportedOperationException();
     }
 
@@ -80,11 +90,11 @@ public class CurveFitter {
     }
 
     /**
-     * T0 = normalize(p2-p3)
+     * T1 = normalize(p2-p3)
      * => dx = (p2.x-p3.x)
      * => dy = (p2.y-p3.y)
      * => q = sqrt(dx^2 + dy^2)
-     * => T0 = (dx/q , dy/q)
+     * => T1 = (dx/q , dy/q)
      * 
      * @param points list of points
      * @param i      index of ending point
@@ -113,7 +123,7 @@ public class CurveFitter {
      * B3 = u_i^3
      * 
      * Then calculate the Error
-     * D_i = P_i-(p0*(B0(u_i)+B1(u_i))+(p3*(B2(u_i)+B3(u_i)))) //(raw errors)
+     * D_i = P_i-((p0*(B0(u_i)+B1(u_i))+(p3*(B2(u_i)+B3(u_i)))) //(raw errors)
      * D_iT0 = D_i(dot)T0 //(error projected on left tangent)
      * D_iT1 = D_i(dot)T1 //(error projected on right tangent)
      * 
@@ -266,5 +276,9 @@ public class CurveFitter {
 
     private static double dot(Point2D.Double a, Point2D.Double b) {
         return (a.x * b.x) + (a.y * b.y);
+    }
+
+    private static Point2D.Double multiply(Point2D.Double a, Point2D.Double b) {
+        return new Point2D.Double(a.x*b.x, a.y*b.y);
     }
 }
