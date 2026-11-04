@@ -28,7 +28,35 @@ public class CurveFitter {
         Point2D.Double T1 = rightTangent(contour, size-1);
         double[] a = leastSquaresHandleLengths(contour, u_i, T0, T1);
 
-        throw new UnsupportedOperationException();
+        Point2D.Double a0T0 = new Point2D.Double(T0.x*a[0], T0.y*a[0]);
+        Point2D.Double a1T1 = new Point2D.Double(T1.x*a[1], T1.y*a[1]);
+
+        Point2D.Double P1 = new Point2D.Double(P0.x+a0T0.x, P0.y+a0T0.y);
+        Point2D.Double P2 = new Point2D.Double(P3.x+a1T1.x, P3.y+a1T1.y);
+
+        Cubic C = new Cubic(P0, P1, P2, P3);
+        double maxErrorSquared = 0;
+        int maxErrorIndex = 0;
+        for(int i=0; i<size; i++) {
+            Point2D.Double P_i = contour.get(i); 
+            double[] B = calculateBernsteinWeights(u_i[i]);
+            Point2D.Double Cu = new Point2D.Double(
+                P0.x*B[0] + P1.x*B[1] + P2.x*B[2] + P3.x*B[3],
+                P0.y*B[0] + P1.y*B[1] + P2.y*B[2] + P3.y*B[3]);
+            
+            double epsilon = Math.pow(P_i.x-Cu.x, 2) + Math.pow(P_i.y-Cu.y, 2);
+            if(epsilon>maxErrorSquared) {
+                maxErrorSquared = epsilon;
+                maxErrorIndex = i;
+            }
+        }
+        if(maxErrorSquared>(tolerance*tolerance)) {
+                List<Cubic> Cubics = makeCubic(contour.subList(0, maxErrorIndex+1), tolerance);
+                Cubics.addAll(makeCubic(contour.subList(maxErrorIndex, size), tolerance));
+                return Cubics;
+        } else {
+            return new ArrayList<Cubic>(List.of(C));
+        }
     }
 
     /**
@@ -276,9 +304,5 @@ public class CurveFitter {
 
     private static double dot(Point2D.Double a, Point2D.Double b) {
         return (a.x * b.x) + (a.y * b.y);
-    }
-
-    private static Point2D.Double multiply(Point2D.Double a, Point2D.Double b) {
-        return new Point2D.Double(a.x*b.x, a.y*b.y);
     }
 }
