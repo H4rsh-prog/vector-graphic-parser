@@ -14,11 +14,77 @@ public class CurveFitter {
      * @param points point sequences to fit
      * @return the fitted cubic Bezier curves
      */
-    public static List<Cubic> fit(List<List<Point2D.Double>> points) {
-        for (List<Point2D.Double> contour : points) {
-            double[] u_i = chordLengthParameterize(contour);
+    public static List<List<Cubic>> fit(List<List<Point2D.Double>> points, double tolerance) {
+        List<List<Cubic>> BezierCurves = new ArrayList<>();
+        for(List<Point2D.Double> contour : points) {
+            BezierCurves.add(makeCubic(contour, tolerance, null, null));
         }
-        throw new UnsupportedOperationException();
+        return BezierCurves;
+    }
+    public static List<Cubic> makeCubic(List<Point2D.Double> contour, double tolerance, Point2D.Double T0r, Point2D.Double T1r) {
+        int size = contour.size();
+        Point2D.Double P0 = contour.get(0);
+        Point2D.Double P3 = contour.get(size-1);
+
+        double[] u_i = chordLengthParameterize(contour);
+        Point2D.Double T0 = (T0r!=null)? T0r: leftTangent(contour, 0);
+        Point2D.Double T1 = (T1r!=null)? T1r: rightTangent(contour, size-1);
+        double[] a = leastSquaresHandleLengths(contour, u_i, T0, T1);
+
+        Point2D.Double a0T0 = new Point2D.Double(T0.x*a[0], T0.y*a[0]);
+        Point2D.Double a1T1 = new Point2D.Double(T1.x*a[1], T1.y*a[1]);
+
+        Point2D.Double P1 = new Point2D.Double(P0.x+a0T0.x, P0.y+a0T0.y);
+        Point2D.Double P2 = new Point2D.Double(P3.x+a1T1.x, P3.y+a1T1.y);
+
+        Cubic C = new Cubic(P0, P1, P2, P3);
+        double maxErrorSquared = 0;
+        int k = 0;
+        for(int i=0; i<size; i++) {
+            Point2D.Double P_i = contour.get(i); 
+            double[] B = calculateBernsteinWeights(u_i[i]);
+            Point2D.Double Cu = new Point2D.Double(
+                P0.x*B[0] + P1.x*B[1] + P2.x*B[2] + P3.x*B[3],
+                P0.y*B[0] + P1.y*B[1] + P2.y*B[2] + P3.y*B[3]);
+            
+            double epsilon = Math.pow(P_i.x-Cu.x, 2) + Math.pow(P_i.y-Cu.y, 2);
+            if(epsilon>maxErrorSquared) {
+                maxErrorSquared = epsilon;
+                k = i;
+            }
+        }
+        if(maxErrorSquared>(tolerance*tolerance)) {
+            Point2D.Double kMinusOne = contour.get(k-1);
+            Point2D.Double kPlusOne = contour.get(k+1);
+            double d_x = kMinusOne.x - kPlusOne.x;
+            double d_y = kMinusOne.y - kPlusOne.y;
+
+            double q = Math.sqrt((d_x * d_x) + (d_y * d_y));
+            if (q == 0) {
+                Point2D.Double Pk = contour.get(k);
+                d_x = kMinusOne.x - Pk.x;
+                d_y = kMinusOne.y - Pk.y;
+                q = Math.sqrt((d_x * d_x) + (d_y * d_y));
+            }
+            if (q == 0) {
+                Point2D.Double Pk = contour.get(k);
+                d_x = Pk.x - kPlusOne.x;
+                d_y = Pk.y - kPlusOne.y;
+                q = Math.sqrt((d_x * d_x) + (d_y * d_y));
+            }
+            if (q == 0) {
+                throw new IllegalArgumentException("Cannot compute a center tangent from coincident points");
+            }
+
+            Point2D.Double Tc = new Point2D.Double(d_x/q, d_y/q);
+            
+            List<Cubic> Cubics = makeCubic(contour.subList(0, k+1), tolerance, null, Tc);
+            Cubics.addAll(makeCubic(contour.subList(k, size), tolerance, new Point2D.Double(-Tc.x, -Tc.y), null));
+            
+            return Cubics;
+        } else {
+            return new ArrayList<Cubic>(List.of(C));
+        }
     }
 
     /**
@@ -80,11 +146,11 @@ public class CurveFitter {
     }
 
     /**
-     * T0 = normalize(p2-p3)
+     * T1 = normalize(p2-p3)
      * => dx = (p2.x-p3.x)
      * => dy = (p2.y-p3.y)
      * => q = sqrt(dx^2 + dy^2)
-     * => T0 = (dx/q , dy/q)
+     * => T1 = (dx/q , dy/q)
      * 
      * @param points list of points
      * @param i      index of ending point
@@ -113,7 +179,7 @@ public class CurveFitter {
      * B3 = u_i^3
      * 
      * Then calculate the Error
-     * D_i = P_i-(p0*(B0(u_i)+B1(u_i))+(p3*(B2(u_i)+B3(u_i)))) //(raw errors)
+     * D_i = P_i-((p0*(B0(u_i)+B1(u_i))+(p3*(B2(u_i)+B3(u_i)))) //(raw errors)
      * D_iT0 = D_i(dot)T0 //(error projected on left tangent)
      * D_iT1 = D_i(dot)T1 //(error projected on right tangent)
      * 
