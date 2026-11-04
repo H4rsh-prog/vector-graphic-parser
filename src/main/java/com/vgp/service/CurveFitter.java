@@ -14,9 +14,12 @@ public class CurveFitter {
      * @param points point sequences to fit
      * @return the fitted cubic Bezier curves
      */
-    public static List<Cubic> fit(List<List<Point2D.Double>> points, double tolerance) {
-        
-        throw new UnsupportedOperationException();
+    public static List<List<Cubic>> fit(List<List<Point2D.Double>> points, double tolerance) {
+        List<List<Cubic>> BezierCurves = new ArrayList<>();
+        for(List<Point2D.Double> contour : points) {
+            BezierCurves.add(makeCubic(contour, tolerance, null, null));
+        }
+        return BezierCurves;
     }
     public static List<Cubic> makeCubic(List<Point2D.Double> contour, double tolerance, Point2D.Double T0r, Point2D.Double T1r) {
         int size = contour.size();
