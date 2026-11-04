@@ -57,6 +57,21 @@ public class CurveFitter {
             double d_y = kMinusOne.y - kPlusOne.y;
 
             double q = Math.sqrt((d_x * d_x) + (d_y * d_y));
+            if (q == 0) {
+                Point2D.Double Pk = contour.get(k);
+                d_x = kMinusOne.x - Pk.x;
+                d_y = kMinusOne.y - Pk.y;
+                q = Math.sqrt((d_x * d_x) + (d_y * d_y));
+            }
+            if (q == 0) {
+                Point2D.Double Pk = contour.get(k);
+                d_x = Pk.x - kPlusOne.x;
+                d_y = Pk.y - kPlusOne.y;
+                q = Math.sqrt((d_x * d_x) + (d_y * d_y));
+            }
+            if (q == 0) {
+                throw new IllegalArgumentException("Cannot compute a center tangent from coincident points");
+            }
 
             Point2D.Double Tc = new Point2D.Double(d_x/q, d_y/q);
             

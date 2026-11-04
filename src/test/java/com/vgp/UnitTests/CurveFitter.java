@@ -3,11 +3,14 @@ package com.vgp.UnitTests;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.awt.geom.Point2D;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+
+import com.vgp.dto.Cubic;
 
 public class CurveFitter {
     @Test
@@ -91,5 +94,23 @@ public class CurveFitter {
 				points, parameters, leftTangent, rightTangent);
 
 		assertArrayEquals(new double[] {2.0 / 3.0, 2.0 / 3.0}, handles, 1e-12);
+	}
+
+	@Test
+	void usesOneSidedTangentWhenCenterTangentIsDegenerate() {
+		List<Point2D.Double> points = List.of(
+				new Point2D.Double(-1, 0),
+				new Point2D.Double(0, 1),
+				new Point2D.Double(-1, 0));
+
+		List<Cubic> curves = com.vgp.service.CurveFitter.makeCubic(points, 0.1, null, null);
+
+		assertEquals(2, curves.size());
+		for (Cubic curve : curves) {
+			assertTrue(Double.isFinite(curve.p1().x));
+			assertTrue(Double.isFinite(curve.p1().y));
+			assertTrue(Double.isFinite(curve.p2().x));
+			assertTrue(Double.isFinite(curve.p2().y));
+		}
 	}
 }
