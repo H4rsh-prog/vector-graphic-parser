@@ -18,14 +18,14 @@ public class CurveFitter {
         
         throw new UnsupportedOperationException();
     }
-    public static List<Cubic> makeCubic(List<Point2D.Double> contour, double tolerance) {
+    public static List<Cubic> makeCubic(List<Point2D.Double> contour, double tolerance, Point2D.Double T0r, Point2D.Double T1r) {
         int size = contour.size();
         Point2D.Double P0 = contour.get(0);
         Point2D.Double P3 = contour.get(size-1);
 
         double[] u_i = chordLengthParameterize(contour);
-        Point2D.Double T0 = leftTangent(contour, 0);
-        Point2D.Double T1 = rightTangent(contour, size-1);
+        Point2D.Double T0 = (T0r!=null)? T0r: leftTangent(contour, 0);
+        Point2D.Double T1 = (T1r!=null)? T1r: rightTangent(contour, size-1);
         double[] a = leastSquaresHandleLengths(contour, u_i, T0, T1);
 
         Point2D.Double a0T0 = new Point2D.Double(T0.x*a[0], T0.y*a[0]);
@@ -36,7 +36,7 @@ public class CurveFitter {
 
         Cubic C = new Cubic(P0, P1, P2, P3);
         double maxErrorSquared = 0;
-        int maxErrorIndex = 0;
+        int k = 0;
         for(int i=0; i<size; i++) {
             Point2D.Double P_i = contour.get(i); 
             double[] B = calculateBernsteinWeights(u_i[i]);
@@ -47,13 +47,23 @@ public class CurveFitter {
             double epsilon = Math.pow(P_i.x-Cu.x, 2) + Math.pow(P_i.y-Cu.y, 2);
             if(epsilon>maxErrorSquared) {
                 maxErrorSquared = epsilon;
-                maxErrorIndex = i;
+                k = i;
             }
         }
         if(maxErrorSquared>(tolerance*tolerance)) {
-                List<Cubic> Cubics = makeCubic(contour.subList(0, maxErrorIndex+1), tolerance);
-                Cubics.addAll(makeCubic(contour.subList(maxErrorIndex, size), tolerance));
-                return Cubics;
+            Point2D.Double kMinusOne = contour.get(k-1);
+            Point2D.Double kPlusOne = contour.get(k+1);
+            double d_x = kMinusOne.x - kPlusOne.x;
+            double d_y = kMinusOne.y - kPlusOne.y;
+
+            double q = Math.sqrt((d_x * d_x) + (d_y * d_y));
+
+            Point2D.Double Tc = new Point2D.Double(d_x/q, d_y/q);
+            
+            List<Cubic> Cubics = makeCubic(contour.subList(0, k+1), tolerance, null, Tc);
+            Cubics.addAll(makeCubic(contour.subList(k, size), tolerance, new Point2D.Double(-Tc.x, -Tc.y), null));
+            
+            return Cubics;
         } else {
             return new ArrayList<Cubic>(List.of(C));
         }
