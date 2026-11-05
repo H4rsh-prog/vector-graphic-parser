@@ -12,17 +12,19 @@ public class RDPSimplifier {
             List<java.awt.geom.Point2D.Double> simplified = new ArrayList<>();
             List<java.awt.geom.Point2D.Double> segment = points.get(i);
             int size = segment.size();
-            boolean[] keep = new boolean[size];
-            keep[0] = true;
-            keep[size-1] = true;
+            if(size>0) {
+                boolean[] keep = new boolean[size];
+                keep[0] = true;
+                keep[size-1] = true;
 
-            recurseRDP(segment, 0, size-1, keep, epsilon);
+                recurseRDP(segment, 0, size-1, keep, epsilon);
 
-            for(int j=1;j<size-2;j++) {
-                if(!keep[j]) continue;
-                simplified.add(segment.get(j));
+                for(int j=0;j<size;j++) {
+                    if(!keep[j]) continue;
+                    simplified.add(segment.get(j));
+                }
+                result.add(simplified);
             }
-            result.add(simplified);
         }
         return result;
     }
@@ -32,7 +34,7 @@ public class RDPSimplifier {
         double maxDistance = 0;
         int maxIndex = -1;
 
-        for(int i=first+1;i<last-1;i++) {
+        for(int i=first+1;i<last;i++) {
             // Calculating perpendicular distance of the point from a straight line between sub segment of points
             // TO IMPLEMENT
             double distance = calculatePerpendicularDistance(points.get(i), points.get(first), points.get(last));
@@ -48,7 +50,7 @@ public class RDPSimplifier {
             recurseRDP(points, maxIndex, last, keep, epsilon);
         } else {
             // All points lie closer than the epsilon so we remove them.
-            for(int i=first+1;i<last-1;i++) {
+            for(int i=first+1;i<last;i++) {
                 keep[i] = false;
             }
         }
@@ -58,6 +60,15 @@ public class RDPSimplifier {
         double Dy = B.y - A.y;
 
         double len2 = (Dx*Dx) + (Dy*Dy);
+        if(len2==0) {
+            Dx = B.x - P.x;
+            Dy = B.y - P.y;
+            len2 = (Dx*Dx) + (Dy*Dy);
+            if(len2==0) {
+                return 0;
+            }
+            return Math.sqrt(len2);
+        }
         double cross = ((P.x - A.x)* Dy) - ((P.y - A.y)* Dx);
         
         double distance = Math.abs(cross) / Math.sqrt(len2);
