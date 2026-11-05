@@ -101,7 +101,7 @@ public class ArrayUtils {
 
             d.append(" Z");
 
-            SVGTag.append(String.format(Locale.ROOT, " <path d=\"%s\" fill=\"none\" stroke=\"blue\" stroke-width=\"0.5\"/> %n", d));
+            SVGTag.append(String.format(Locale.ROOT, " <path d=\"%s\" fill=\"black\" stroke=\"black\" stroke-width=\"0.5\"/> %n", d));
         }
         SVGTag.append("</svg>");
         return SVGTag.toString();
