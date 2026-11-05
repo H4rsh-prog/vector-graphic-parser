@@ -54,22 +54,26 @@ public class CurveFitter {
             }
         }
         if(maxErrorSquared>(tolerance*tolerance)) {
-            Point2D.Double kMinusOne = contour.get(k-1);
-            Point2D.Double kPlusOne = contour.get(k+1);
-            double d_x = kMinusOne.x - kPlusOne.x;
-            double d_y = kMinusOne.y - kPlusOne.y;
+            int kPlus = Math.min(k + 2, size - 1);
+            int kMinus = Math.max(k - 2, 0);
+
+            Point2D.Double kMinusPoint = contour.get(kMinus);
+            Point2D.Double kPlusPoint = contour.get(kPlus);
+            
+            double d_x = kMinusPoint.x - kPlusPoint.x;
+            double d_y = kMinusPoint.y - kPlusPoint.y;
 
             double q = Math.sqrt((d_x * d_x) + (d_y * d_y));
             if (q == 0) {
                 Point2D.Double Pk = contour.get(k);
-                d_x = kMinusOne.x - Pk.x;
-                d_y = kMinusOne.y - Pk.y;
+                d_x = kMinusPoint.x - Pk.x;
+                d_y = kMinusPoint.y - Pk.y;
                 q = Math.sqrt((d_x * d_x) + (d_y * d_y));
             }
             if (q == 0) {
                 Point2D.Double Pk = contour.get(k);
-                d_x = Pk.x - kPlusOne.x;
-                d_y = Pk.y - kPlusOne.y;
+                d_x = Pk.x - kPlusPoint.x;
+                d_y = Pk.y - kPlusPoint.y;
                 q = Math.sqrt((d_x * d_x) + (d_y * d_y));
             }
             if (q == 0) {
@@ -78,8 +82,8 @@ public class CurveFitter {
 
             Point2D.Double Tc = new Point2D.Double(d_x/q, d_y/q);
             
-            List<Cubic> Cubics = makeCubic(contour.subList(0, k+1), tolerance, null, Tc);
-            Cubics.addAll(makeCubic(contour.subList(k, size), tolerance, new Point2D.Double(-Tc.x, -Tc.y), null));
+            List<Cubic> Cubics = makeCubic(contour.subList(0, k+1), tolerance, T0r, Tc);
+            Cubics.addAll(makeCubic(contour.subList(k, size), tolerance, new Point2D.Double(-Tc.x, -Tc.y), T1r));
             
             return Cubics;
         } else {
@@ -134,13 +138,15 @@ public class CurveFitter {
      * @return point of tangent
      */
     public static Point2D.Double leftTangent(List<Point2D.Double> points, int i) {
+        int lookAhead = Math.min(i + 3, points.size() - 1);
         Point2D.Double P0 = points.get(i);
-        Point2D.Double P1 = points.get(i + 1);
+        Point2D.Double P1 = points.get(lookAhead);
 
         double d_x = P1.x - P0.x;
         double d_y = P1.y - P0.y;
-
         double q = Math.sqrt((d_x * d_x) + (d_y * d_y));
+
+        if(q==0) return new Point2D.Double(0,0);
 
         return new Point2D.Double(d_x / q, d_y / q);
     }
@@ -157,13 +163,15 @@ public class CurveFitter {
      * @return point of tangent
      */
     public static Point2D.Double rightTangent(List<Point2D.Double> points, int i) {
+        int lookBehind = Math.max(i - 3, 0);
         Point2D.Double P3 = points.get(i);
-        Point2D.Double P2 = points.get(i - 1);
+        Point2D.Double P2 = points.get(lookBehind);
 
         double d_x = P2.x - P3.x;
         double d_y = P2.y - P3.y;
-
         double q = Math.sqrt((d_x * d_x) + (d_y * d_y));
+
+        if(q==0) return new Point2D.Double(0,0);
 
         return new Point2D.Double(d_x / q, d_y / q);
     }
@@ -251,6 +259,14 @@ public class CurveFitter {
         double a_1 = ((N[0][0] * x_1) - (N[1][0] * x_0)) / det;
         if (a_1 <= 0)
             return fallbackForHandleLength(points, uLength);
+
+        Point2D.Double P0 = points.get(0);
+        Point2D.Double P3 = points.get(points.size()-1);
+        double chordLength = Math.sqrt(Math.pow(P3.x - P0.x, 2) + Math.pow(P3.y - P0.y, 2));
+
+        if (a_0 > chordLength * 3.0 || a_1 > chordLength * 3.0) {
+            return fallbackForHandleLength(points, uLength);
+        }
 
         return new double[] { a_0, a_1 };
     }
