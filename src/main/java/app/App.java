@@ -1,7 +1,7 @@
 package app;
 
 public class App {
-    public static void start(String PATH_RASTER, float BLUR_SIGMA, float MASK_THRESHOLD, float SIMPLIFICATION_EPSILON, float CURVE_TOLERANCE){
+    public static void start(String PATH_RASTER, float BLUR_SIGMA, float MASK_THRESHOLD_WEIGHT, float SIMPLIFICATION_EPSILON, float CURVE_TOLERANCE){
         java.awt.image.BufferedImage preview = com.vgp.service.ImageReader.readImage(new java.io.File(PATH_RASTER));
         try {javax.imageio.ImageIO.write(preview, "png", new java.io.File("target/input.png"));} catch (Exception e) {e.printStackTrace();}
         float[][] grayscaleMap = com.vgp.service.ValueMapper.createGrayscaleMap(preview);
@@ -12,7 +12,7 @@ public class App {
         float[] normalizedblurredMap = com.vgp.service.GaussianBlur.blur(normalizedMap, w, h, BLUR_SIGMA);
         float[][] blurredMap = com.vgp.utils.ArrayUtils.denormalize(normalizedblurredMap, w, h);
         writeOutputRaster("v2_blurred", blurredMap);
-        boolean[][] mask = com.vgp.service.BinaryMasker.mask(blurredMap, MASK_THRESHOLD);
+        boolean[][] mask = com.vgp.service.BinaryMasker.mask(blurredMap, com.vgp.service.BinaryMasker.findThreshold(blurredMap)+MASK_THRESHOLD_WEIGHT);
         writeOutputRaster("v3_mask", convertMaskToValues(mask));
         java.util.List<java.util.List<java.awt.geom.Point2D.Double>> contour = com.vgp.service.ContourTracing.trace(mask);
         writeOutputVector("v4_contour", com.vgp.utils.ArrayUtils.serializePolylineToSVG(contour, w, h));
