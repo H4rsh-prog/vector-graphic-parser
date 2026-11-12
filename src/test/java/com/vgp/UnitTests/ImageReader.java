@@ -14,8 +14,7 @@ public class ImageReader {
     @Test
     public void readImage(){
         String filePath = Dotenv.configure().load().get("test-image-path");
-        com.vgp.service.ImageReader reader = new com.vgp.service.ImageReader();
-        BufferedImage result = reader.readImage(new File(filePath));
+        BufferedImage result = com.vgp.service.ImageReader.readImage(new File(filePath));
         assertNotEquals(result, null);
     }
 }
