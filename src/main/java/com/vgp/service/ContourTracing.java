@@ -67,7 +67,8 @@ public class ContourTracing {
             }
         }
 
-        return closeLoops(adjacency);
+        List<List<java.awt.geom.Point2D.Double>> loops = closeLoops(adjacency); 
+        return filterLargeContours(loops, w, h);
     }
     private static void addSegment(HashMap<Long, List<Long>> adjacency, long from, long to) {
         adjacency.computeIfAbsent(from, absent -> new ArrayList<>(2)).add(to);
@@ -132,5 +133,38 @@ public class ContourTracing {
     //HELPER FUNCTION TO UNPACK THE Y CORDINATE FROM PACKED CORDINATES
     private static int unpackYCordinate(long xy) {
         return (int) (xy & 0xFFFFFFFFL);
+    }
+
+    public static List<List<java.awt.geom.Point2D.Double>> filterLargeContours(
+        List<List<java.awt.geom.Point2D.Double>> contours, int width, int height) {
+    
+    List<List<java.awt.geom.Point2D.Double>> filtered = new ArrayList<>();
+    
+    for (List<java.awt.geom.Point2D.Double> contour : contours) {
+        if (contour.isEmpty()) continue;
+        
+        double minX = Double.MAX_VALUE, maxX = -Double.MAX_VALUE;
+        double minY = Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+        
+        for (java.awt.geom.Point2D.Double p : contour) {
+            minX = Math.min(minX, p.x);
+            maxX = Math.max(maxX, p.x);
+            minY = Math.min(minY, p.y);
+            maxY = Math.max(maxY, p.y);
+        }
+        
+        double contourWidth = maxX - minX;
+        double contourHeight = maxY - minY;
+        
+        // If the contour covers more than 90% of the image dimensions, it's the border.
+        if (contourWidth > width * 0.9 && contourHeight > height * 0.9) {
+            System.out.println("Filtered out bounding box contour.");
+            continue; // Skip this contour
+        }
+        
+        filtered.add(contour);
+    }
+    
+    return filtered;
     }
 }

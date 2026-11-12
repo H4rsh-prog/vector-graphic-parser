@@ -13,9 +13,9 @@ public class AppTests {
         // float SIMPLIFICATION_EPSILON = Float.valueOf(JOptionPane.showInputDialog("SIMPLIFICATION_EPSILON : "));
         // float CURVE_TOLERANCE = Float.valueOf(JOptionPane.showInputDialog("CURVE_TOLERANCE : "));
         float BLUR_SIGMA = .7f;
-        float MASK_THRESHOLD_WEIGHT = -0.14f;
-        float SIMPLIFICATION_EPSILON = 1.5f;
-        float CURVE_TOLERANCE = 2.5f;
+        float MASK_THRESHOLD_WEIGHT = -.3f;
+        float SIMPLIFICATION_EPSILON = .2f;
+        float CURVE_TOLERANCE = 1.5f;
         App.start(PATH, BLUR_SIGMA, MASK_THRESHOLD_WEIGHT, SIMPLIFICATION_EPSILON, CURVE_TOLERANCE);
     }
 

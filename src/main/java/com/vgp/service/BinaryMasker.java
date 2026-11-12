@@ -7,7 +7,7 @@ public class BinaryMasker {
         boolean[][] mask = new boolean[H][W];
         for(int y=0;y<H;y++) {
             for(int x=0;x<W;x++) {
-                mask[y][x] = (value_graph[y][x]>threshold);
+                mask[y][x] = (value_graph[y][x]<threshold);
             }
         }
         return mask;

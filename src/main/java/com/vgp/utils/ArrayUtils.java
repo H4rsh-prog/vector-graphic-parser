@@ -106,4 +106,43 @@ public class ArrayUtils {
         SVGTag.append("</svg>");
         return SVGTag.toString();
     }
+
+    public static String serializeCubicsWithControlPointsToSVG(List<List<com.vgp.dto.Cubic>> cubics, int width, int height) {
+        StringBuilder SVGTag = new StringBuilder(String.format(Locale.ROOT, "<?xml version=\"1.0\" encoding=\"UTF-8\"?>%n"
+                + "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"%d\" height=\"%d\" viewBox=\"0 0 %d %d\">%n"
+                + "<rect width=\"%d\" height=\"%d\" fill=\"white\" />%n", width, height, width, height, width, height));
+
+        for (List<com.vgp.dto.Cubic> contour : cubics) {
+            if (contour == null || contour.isEmpty()) continue;
+
+            StringBuilder curve = new StringBuilder();
+            com.vgp.dto.Cubic first = contour.get(0);
+            curve.append(String.format(Locale.ROOT, "M %.2f %.2f", first.p1().x, first.p1().y));
+            for (com.vgp.dto.Cubic cubic : contour) {
+                curve.append(String.format(Locale.ROOT, " C %.2f %.2f, %.2f %.2f, %.2f %.2f",
+                        cubic.p2().x, cubic.p2().y, cubic.p3().x, cubic.p3().y,
+                        cubic.p4().x, cubic.p4().y));
+            }
+            SVGTag.append(String.format(Locale.ROOT,
+                    " <path d=\"%s\" fill=\"none\" stroke=\"#555\" stroke-width=\"1.5\"/>%n", curve));
+
+            for (com.vgp.dto.Cubic cubic : contour) {
+                // Thin lines connect each endpoint (anchor) to its corresponding control point.
+                SVGTag.append(String.format(Locale.ROOT,
+                        " <line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" stroke=\"#999\" stroke-width=\"1\"/>%n"
+                        + " <line x1=\"%.2f\" y1=\"%.2f\" x2=\"%.2f\" y2=\"%.2f\" stroke=\"#999\" stroke-width=\"1\"/>%n",
+                        cubic.p1().x, cubic.p1().y, cubic.p2().x, cubic.p2().y,
+                        cubic.p4().x, cubic.p4().y, cubic.p3().x, cubic.p3().y));
+                SVGTag.append(String.format(Locale.ROOT,
+                        " <circle cx=\"%.2f\" cy=\"%.2f\" r=\"3\" fill=\"#2878b5\"><title>Anchor</title></circle>%n"
+                        + " <circle cx=\"%.2f\" cy=\"%.2f\" r=\"2.5\" fill=\"#e4572e\"><title>Control point</title></circle>%n"
+                        + " <circle cx=\"%.2f\" cy=\"%.2f\" r=\"2.5\" fill=\"#e4572e\"><title>Control point</title></circle>%n"
+                        + " <circle cx=\"%.2f\" cy=\"%.2f\" r=\"3\" fill=\"#2878b5\"><title>Anchor</title></circle>%n",
+                        cubic.p1().x, cubic.p1().y, cubic.p2().x, cubic.p2().y,
+                        cubic.p3().x, cubic.p3().y, cubic.p4().x, cubic.p4().y));
+            }
+        }
+        SVGTag.append("</svg>");
+        return SVGTag.toString();
+    }
 }

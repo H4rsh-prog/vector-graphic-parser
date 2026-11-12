@@ -19,6 +19,7 @@ public class App {
         java.util.List<java.util.List<java.awt.geom.Point2D.Double>> simplifiedContour = com.vgp.service.RDPSimplifier.simplify(contour, SIMPLIFICATION_EPSILON);
         writeOutputVector("v5_simplified", com.vgp.utils.ArrayUtils.serializePolylineToSVG(simplifiedContour, w, h));
         java.util.List<java.util.List<com.vgp.dto.Cubic>> cubics = com.vgp.service.CurveFitter.fit(simplifiedContour, CURVE_TOLERANCE);
+        writeOutputVector("v6_controlpoints", com.vgp.utils.ArrayUtils.serializeCubicsWithControlPointsToSVG(cubics, w, h));
         writeOutputVector("output", com.vgp.utils.ArrayUtils.serializeCubicsToSVG(cubics, w, h));
     }
     private static void writeOutputRaster(String fileName, float[][] image){
