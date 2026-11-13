@@ -1,10 +1,12 @@
 package com.vgp.v1.dto;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public record VectorsRequest(
-    String Base64EncodedImage,
-    float blurSigma,
+    MultipartFile image,
+    float blurStrength,
     float maskThresholdWeight,
-    float simplificationEpsilon,
+    float simplificationThreshold,
     float curveTolerance
 ) {
 }
