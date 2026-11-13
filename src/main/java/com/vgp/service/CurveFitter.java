@@ -21,7 +21,7 @@ public class CurveFitter {
         }
         return BezierCurves;
     }
-    public static List<Cubic> makeCubic(List<Point2D.Double> contour, double tolerance, Point2D.Double T0r, Point2D.Double T1r) {
+    private static List<Cubic> makeCubic(List<Point2D.Double> contour, double tolerance, Point2D.Double T0r, Point2D.Double T1r) {
         int size = contour.size();
         Point2D.Double P0 = contour.get(0);
         Point2D.Double P3 = contour.get(size-1);
@@ -97,7 +97,7 @@ public class CurveFitter {
      * @param points ordered samples to parameterize
      * @return one normalized parameter per sample, from 0 to 1
      */
-    public static double @Nullable [] chordLengthParameterize(List<Point2D.Double> points) {
+    private static double @Nullable [] chordLengthParameterize(List<Point2D.Double> points) {
         if (points.isEmpty())
             return null;
         int count = points.size();
@@ -137,7 +137,7 @@ public class CurveFitter {
      * @param i      index of starting point
      * @return point of tangent
      */
-    public static Point2D.Double leftTangent(List<Point2D.Double> points, int i) {
+    private static Point2D.Double leftTangent(List<Point2D.Double> points, int i) {
         int lookAhead = Math.min(i + 3, points.size() - 1);
         Point2D.Double P0 = points.get(i);
         Point2D.Double P1 = points.get(lookAhead);
@@ -162,7 +162,7 @@ public class CurveFitter {
      * @param i      index of ending point
      * @return point of tangent
      */
-    public static Point2D.Double rightTangent(List<Point2D.Double> points, int i) {
+    private static Point2D.Double rightTangent(List<Point2D.Double> points, int i) {
         int lookBehind = Math.max(i - 3, 0);
         Point2D.Double P3 = points.get(i);
         Point2D.Double P2 = points.get(lookBehind);
@@ -221,7 +221,7 @@ public class CurveFitter {
      *                   toward the previous sample
      * @return handle lengths in the order [alpha_L, alpha_R]
      */
-    public static double[] leastSquaresHandleLengths(
+    private static double[] leastSquaresHandleLengths(
             List<Point2D.Double> points,
             double[] u,
             Point2D.Double T0,

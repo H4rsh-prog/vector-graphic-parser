@@ -28,7 +28,7 @@ public class RDPSimplifier {
         }
         return result;
     }
-    public static void recurseRDP(List<java.awt.geom.Point2D.Double> points, int first, int last, boolean[] keep, float epsilon){
+    private static void recurseRDP(List<java.awt.geom.Point2D.Double> points, int first, int last, boolean[] keep, float epsilon){
         if(first+1 >= last) return; // No points in between to simplify
 
         double maxDistance = 0;
@@ -55,7 +55,7 @@ public class RDPSimplifier {
             }
         }
     }
-    public static double calculatePerpendicularDistance(java.awt.geom.Point2D.Double P, java.awt.geom.Point2D.Double A, java.awt.geom.Point2D.Double B){
+    private static double calculatePerpendicularDistance(java.awt.geom.Point2D.Double P, java.awt.geom.Point2D.Double A, java.awt.geom.Point2D.Double B){
         double Dx = B.x - A.x;
         double Dy = B.y - A.y;
 
