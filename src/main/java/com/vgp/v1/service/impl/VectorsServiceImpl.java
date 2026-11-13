@@ -3,6 +3,7 @@ package com.vgp.v1.service.impl;
 import org.springframework.stereotype.Service;
 
 import com.vgp.v1.dto.VectorsRequest;
+import com.vgp.v1.exception.ExceptionEnum;
 import com.vgp.v1.service.handler.VectorsServiceHandler;
 import com.vgp.v1.service.interfaces.VectorsService;
 
@@ -19,7 +20,7 @@ public class VectorsServiceImpl implements VectorsService {
         try {
             response = vectorsServiceHandler.executePipeline(request);
         } catch (Exception e) {
-            e.printStackTrace();
+            ExceptionEnum.FAILED_PIPELINE_EXECUTION.throwException();
         }
         return response;
     }
